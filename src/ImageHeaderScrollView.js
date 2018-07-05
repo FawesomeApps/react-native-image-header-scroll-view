@@ -1,7 +1,14 @@
 // @flow
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, ScrollView, StyleSheet, View, Image, Dimensions } from 'react-native';
+import {
+  Animated,
+  ScrollView,
+  StyleSheet,
+  View,
+  Image,
+  Dimensions
+} from 'react-native';
 import type { ViewProps } from 'ViewPropTypes';
 import type { FlatList, SectionList, ListView } from 'react-native';
 
@@ -9,7 +16,7 @@ type ScrollViewProps = {
   onScroll?: ?Function,
   style?: $PropertyType<ViewProps, 'style'>,
   contentContainerStyle?: $PropertyType<ViewProps, 'style'>,
-  scrollEventThrottle?: number,
+  scrollEventThrottle?: number
 };
 
 type SourceObjectProps = {
@@ -21,7 +28,7 @@ type SourceObjectProps = {
   cache?: ?('default' | 'reload' | 'force-cache' | 'only-if-cached'),
   width?: ?number,
   height?: ?number,
-  scale?: ?number,
+  scale?: ?number
 };
 type SourceProps = number | SourceObjectProps | SourceObjectProps[];
 
@@ -41,7 +48,7 @@ export type Props = ScrollViewProps & {
   renderTouchableFixedForeground?: ?() => React$Element<any>,
   ScrollViewComponent: React$ComponentType<ScrollViewProps>,
   scrollViewBackgroundColor: string,
-  headerImage?: ?SourceProps,
+  headerImage?: ?SourceProps
 };
 
 export type DefaultProps = {
@@ -55,15 +62,19 @@ export type DefaultProps = {
   renderFixedForeground: () => React$Element<any>,
   renderHeader: () => React$Element<any>,
   ScrollViewComponent: React$ComponentType<ScrollViewProps>,
-  scrollViewBackgroundColor: string,
+  scrollViewBackgroundColor: string
 };
 
 export type State = {
   scrollY: Animated.Value,
-  pageY: number,
+  pageY: number
 };
 
-type ScrollComponent<ItemT> = FlatList<ItemT> | SectionList<ItemT> | ListView | ScrollView;
+type ScrollComponent<ItemT> =
+  | FlatList<ItemT>
+  | SectionList<ItemT>
+  | ListView
+  | ScrollView;
 
 class ImageHeaderScrollView extends Component<Props, State> {
   container: ?View; // @see https://github.com/facebook/react-native/issues/15955
@@ -81,21 +92,21 @@ class ImageHeaderScrollView extends Component<Props, State> {
     renderFixedForeground: () => <View />,
     renderHeader: () => <View />,
     ScrollViewComponent: ScrollView,
-    scrollViewBackgroundColor: 'white',
+    scrollViewBackgroundColor: 'white'
   };
 
   constructor(props: Props) {
     super(props);
     this.state = {
       scrollY: new Animated.Value(0),
-      pageY: 0,
+      pageY: 0
     };
   }
 
   getChildContext() {
     return {
       scrollY: this.state.scrollY,
-      scrollPageY: this.state.pageY + this.props.minHeight,
+      scrollPageY: this.state.pageY + this.props.minHeight
     };
   }
 
@@ -104,7 +115,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
     return this.state.scrollY.interpolate({
       inputRange: [0, headerScrollDistance],
       outputRange,
-      extrapolate: 'clamp',
+      extrapolate: 'clamp'
     });
   }
 
@@ -115,7 +126,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
           source={this.props.headerImage}
           style={{
             height: this.props.maxHeight,
-            width: Dimensions.get('window').width,
+            width: Dimensions.get('window').width
           }}
         />
       );
@@ -126,46 +137,54 @@ class ImageHeaderScrollView extends Component<Props, State> {
   renderHeader() {
     const overlayOpacity = this.interpolateOnImageHeight([
       this.props.minOverlayOpacity,
-      this.props.maxOverlayOpacity,
+      this.props.maxOverlayOpacity
     ]);
 
-    const headerScale = this.state.scrollY.interpolate({
-      inputRange: [-this.props.maxHeight, 0],
-      outputRange: [3, 1],
-      extrapolate: 'clamp',
+    console.warn('lol', this.state.scrollY);
+    const headerTranslate = this.state.scrollY.interpolate({
+      inputRange: [0, this.props.maxHeight],
+      outputRange: [0, -50],
+      extrapolate: 'clamp'
     });
 
     const headerTransformStyle = {
       height: this.props.maxHeight,
-      transform: [{ scale: headerScale }],
+      transform: [{ translateY: headerTranslate }]
     };
 
     const overlayStyle = [
       styles.overlay,
-      { opacity: overlayOpacity, backgroundColor: this.props.overlayColor },
+      { opacity: overlayOpacity, backgroundColor: this.props.overlayColor }
     ];
 
     return (
-      <Animated.View style={[styles.header, headerTransformStyle]}>
-        {this.renderHeaderProps()}
-        <Animated.View style={overlayStyle} />
-        <View style={styles.fixedForeground}>{this.props.renderFixedForeground()}</View>
-      </Animated.View>
+      <View style={styles.header}>
+        <Animated.View style={[headerTransformStyle]}>
+          {this.renderHeaderProps()}
+          <Animated.View style={overlayStyle} />
+        </Animated.View>
+        <View style={styles.fixedForeground}>
+          {this.props.renderFixedForeground()}
+        </View>
+      </View>
     );
   }
 
   renderForeground() {
     const headerTranslate = this.state.scrollY.interpolate({
       inputRange: [0, this.props.maxHeight * 2],
-      outputRange: [0, -this.props.maxHeight * 2 * this.props.foregroundParallaxRatio],
-      extrapolate: 'clamp',
+      outputRange: [
+        0,
+        -this.props.maxHeight * 2 * this.props.foregroundParallaxRatio
+      ],
+      extrapolate: 'clamp'
     });
     const opacity = this.interpolateOnImageHeight([1, -0.3]);
 
     const headerTransformStyle = {
       height: this.props.maxHeight,
       transform: [{ translateY: headerTranslate }],
-      opacity: this.props.fadeOutForeground ? opacity : 1,
+      opacity: this.props.fadeOutForeground ? opacity : 1
     };
 
     if (!this.props.renderForeground) {
@@ -180,14 +199,19 @@ class ImageHeaderScrollView extends Component<Props, State> {
   }
 
   renderTouchableFixedForeground() {
-    const height = this.interpolateOnImageHeight([this.props.maxHeight, this.props.minHeight]);
+    const height = this.interpolateOnImageHeight([
+      this.props.maxHeight,
+      this.props.minHeight
+    ]);
 
     if (!this.props.renderTouchableFixedForeground) {
       return <View />;
     }
 
     return (
-      <Animated.View style={[styles.header, styles.touchableFixedForeground, { height }]}>
+      <Animated.View
+        style={[styles.header, styles.touchableFixedForeground, { height }]}
+      >
         {this.props.renderTouchableFixedForeground()}
       </Animated.View>
     );
@@ -197,7 +221,9 @@ class ImageHeaderScrollView extends Component<Props, State> {
     if (!this.container) {
       return;
     }
-    this.container.measureInWindow((x, y) => this.setState(() => ({ pageY: y })));
+    this.container.measureInWindow((x, y) =>
+      this.setState(() => ({ pageY: y }))
+    );
   };
 
   onScroll = (e: *) => {
@@ -240,8 +266,8 @@ class ImageHeaderScrollView extends Component<Props, State> {
           styles.container,
           {
             paddingTop: minHeight,
-            backgroundColor: scrollViewBackgroundColor,
-          },
+            backgroundColor: scrollViewBackgroundColor
+          }
         ]}
         ref={ref => (this.container = ref)}
         onLayout={this.onContainerLayout}
@@ -256,10 +282,10 @@ class ImageHeaderScrollView extends Component<Props, State> {
             {
               backgroundColor: scrollViewBackgroundColor,
               marginTop: inset,
-              paddingBottom: inset,
+              paddingBottom: inset
             },
             contentContainerStyle,
-            childrenStyle,
+            childrenStyle
           ]}
           style={[styles.container, style]}
           onScroll={this.onScroll}
@@ -353,7 +379,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
     animated?: ?boolean,
     index: number,
     viewOffset?: number,
-    viewPosition?: number,
+    viewPosition?: number
   }) {
     if (
       this.scrollViewRef &&
@@ -364,7 +390,11 @@ class ImageHeaderScrollView extends Component<Props, State> {
     }
   }
 
-  scrollToItem(params: { animated?: ?boolean, item: any, viewPosition?: number }) {
+  scrollToItem(params: {
+    animated?: ?boolean,
+    item: any,
+    viewPosition?: number
+  }) {
     if (
       this.scrollViewRef &&
       this.scrollViewRef.scrollToItem &&
@@ -393,7 +423,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
     itemIndex: number,
     sectionIndex: number,
     viewOffset?: number,
-    viewPosition?: number,
+    viewPosition?: number
   }) {
     if (
       this.scrollViewRef &&
@@ -407,23 +437,23 @@ class ImageHeaderScrollView extends Component<Props, State> {
 
 ImageHeaderScrollView.childContextTypes = {
   scrollY: PropTypes.instanceOf(Animated.Value),
-  scrollPageY: PropTypes.number,
+  scrollPageY: PropTypes.number
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   header: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   headerChildren: {
     backgroundColor: 'transparent',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   overlay: {
     position: 'absolute',
@@ -431,7 +461,7 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     bottom: 0,
-    zIndex: 100,
+    zIndex: 100
   },
   fixedForeground: {
     position: 'absolute',
@@ -439,11 +469,11 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     bottom: 0,
-    zIndex: 101,
+    zIndex: 101
   },
   touchableFixedForeground: {
-    zIndex: 102,
-  },
+    zIndex: 102
+  }
 });
 
 export default ImageHeaderScrollView;
