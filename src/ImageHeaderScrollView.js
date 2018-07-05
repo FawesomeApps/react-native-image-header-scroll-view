@@ -140,7 +140,6 @@ class ImageHeaderScrollView extends Component<Props, State> {
       this.props.maxOverlayOpacity
     ]);
 
-    console.warn('lol', this.state.scrollY);
     const headerTranslate = this.state.scrollY.interpolate({
       inputRange: [0, this.props.maxHeight],
       outputRange: [0, -50],
