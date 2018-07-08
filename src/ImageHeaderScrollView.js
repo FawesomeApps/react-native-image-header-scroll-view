@@ -136,12 +136,6 @@ class ImageHeaderScrollView extends Component<Props, State> {
       extrapolate: 'clamp',
     });
 
-    const headerHeight = this.state.scrollY.interpolate({
-      inputRange: [-this.props.maxHeight, 0],
-      outputRange: [this.props.maxHeight * 2, this.props.maxHeight],
-      extrapolate: 'clamp',
-    });
-
     const headerTranslate = this.state.scrollY.interpolate({
       inputRange: [0, this.props.maxHeight],
       outputRange: [0, -this.props.maxHeight + this.props.minHeight],
@@ -149,7 +143,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
     });
 
     const headerTransformStyle = {
-      height: headerHeight,
+      height: this.props.maxHeight,
       transform: [{ translateY: headerTranslate }, { scale: headerScale }],
     };
 
@@ -436,7 +430,6 @@ const styles = StyleSheet.create({
     right: 0,
     overflow: 'hidden',
     zIndex: 99,
-    backgroundColor: 'red',
   },
   headerChildren: {
     backgroundColor: 'transparent',
