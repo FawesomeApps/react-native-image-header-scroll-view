@@ -71,6 +71,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
   state: State;
 
   static defaultProps: DefaultProps = {
+    overlay: true,
     overlayColor: 'black',
     fadeOutForeground: false,
     foregroundParallaxRatio: 1,
@@ -80,7 +81,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
     minOverlayOpacity: 0,
     renderFixedForeground: () => <View />,
     renderHeader: () => <View />,
-    ScrollViewComponent: ScrollView,
+    ScrollViewComponent: Animated.ScrollView,
     scrollViewBackgroundColor: 'white',
   };
 
@@ -143,7 +144,7 @@ class ImageHeaderScrollView extends Component<Props, State> {
 
     const headerTranslate = this.state.scrollY.interpolate({
       inputRange: [0, this.props.maxHeight],
-      outputRange: [0, -50],
+      outputRange: [0, -this.props.maxHeight + this.props.minHeight],
       extrapolate: 'clamp',
     });
 
@@ -158,13 +159,10 @@ class ImageHeaderScrollView extends Component<Props, State> {
     ];
 
     return (
-      <View style={[styles.header]}>
-        <Animated.View style={[headerTransformStyle]}>
-          {this.renderHeaderProps()}
-          <Animated.View style={overlayStyle} />
-        </Animated.View>
-        <View style={styles.fixedForeground}>{this.props.renderFixedForeground()}</View>
-      </View>
+      <Animated.View style={[styles.header, headerTransformStyle]}>
+        <Animated.View>{this.renderHeaderProps()}</Animated.View>
+        {this.props.overlay && <Animated.View style={overlayStyle} />}
+      </Animated.View>
     );
   }
 
@@ -261,6 +259,9 @@ class ImageHeaderScrollView extends Component<Props, State> {
         onLayout={this.onContainerLayout}
       >
         {this.renderHeader()}
+        <View style={[styles.fixedForeground, { height: this.props.minHeight }]}>
+          {this.props.renderFixedForeground()}
+        </View>
         <ScrollViewComponent
           ref={ref => (this.scrollViewRef = ref)}
           scrollEventThrottle={16}
@@ -434,6 +435,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     overflow: 'hidden',
+    zIndex: 99,
+    backgroundColor: 'red',
   },
   headerChildren: {
     backgroundColor: 'transparent',
@@ -452,7 +455,6 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     left: 0,
-    bottom: 0,
     zIndex: 101,
   },
   touchableFixedForeground: {
