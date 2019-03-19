@@ -77,6 +77,10 @@ class TriggeringView extends Component<Props, State> {
     this.listenerId = nextContext.scrollY.addListener(this.onScroll);
   }
 
+  componentWillUnmount() {
+    this.context.scrollY.removeListener(this.listenerId);
+  }
+
   onRef = (ref: any) => {
     this.ref = ref;
   };
